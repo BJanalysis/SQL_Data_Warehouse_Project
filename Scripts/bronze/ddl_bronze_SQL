@@ -1,8 +1,20 @@
 -- DDL (Data Defination language  deines the stracture of database tables).
 -- Bronze Layer
+
+/*
+=========================================================================
+DDL Scripts: Create Bronze Tables
+=========================================================================
+Scripting
+	This Script create tables in the 'bronze' schema, dropping existing tables
+	if they already exist.
+You want the same results? Then run thid script to re-define the DDL structure of 'Bronze' tables.
+=========================================================================
+*/
+
   
 GO
-If OBJECT_id ('bronze.crm_cust_info', 'U') is not null  -- check if table 'name' of table is present (inNotNull) then        -- U means user defined table
+If OBJECT_id ('bronze.crm_cust_info', 'U') is not null  -- check if table 'PutTableName' is exist (inNotNull) then        -- U means 'user defined' table
 	Drop table bronze.crm_cust_info						-- Drop that table 	
 Create table bronze.crm_cust_info(
   	cst_id int, 
@@ -13,6 +25,7 @@ Create table bronze.crm_cust_info(
   	cst_gndr nvarchar(50),
   	cst_create_date date
 )
+
 
 GO
 If OBJECT_id ('bronze.crm_prd_info', 'U') is not null  
