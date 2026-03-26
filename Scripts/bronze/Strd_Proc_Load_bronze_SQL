@@ -1,0 +1,171 @@
+/*
+=======================================================================================================
+Stored Procedure: Load Bronze Layer (Source -> Bronze)
+=======================================================================================================
+Script Purpose:
+  This stored procedure load data into the 'bronze' scjema from external csv files. It performs the 
+  following actions:
+  - Truncate the bronze tables before loading data.
+  - Uses the 'BULK INSERT' command to load data from csv Files to bronze tables.
+
+-- Create Stored Procedure.
+-- Naming convnetion for stored procedure (Load_<Layer>)
+
+-- 1: simple added 'begin  and end'.
+-- 2: TRY,,, CATCH (Ensure error handling,data integrity, and issue logging for easier debugging.
+-- 3: TRY,,, CATCH (Sql runs the try block, and if it fails, it runs the CATCH block to handel thel error.
+-- 4: Trach ETL Duration (Helps to identify, optimize, performance, monitor trends, detect issues)
+
+*/
+
+Create or Alter PROCEDURE bronze.load_bronze AS
+BEGIN
+	Declare @start_time DATETIME, @End_time DATETIME, @full_bronze_batch_Start_T DATETIME, @full_bronze_batch_End_T DATETIME
+
+	BEGIN TRY 
+		SET @full_bronze_batch_Start_T = GETDATE()
+		Print '-==========================================================================-'
+		Print 'Loading Bronze Layer'
+		Print '-==========================================================================-'
+
+		Print '----------------------------------------------------------------------------'
+		Print 'Loading CRM TABLES'
+		Print '----------------------------------------------------------------------------'
+
+
+		-- 1
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.crm_cust_info'
+		Truncate table bronze.crm_cust_info 
+
+		Print '>> Inserting data into:  Bronze.crm_cust_info'
+		Bulk insert bronze.crm_cust_info
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
+		with (
+			Firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK 
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+
+		-- 2
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.crm_prd_info'
+		truncate table bronze.crm_prd_info
+
+		Print '>> Inserting data into:  Bronze.crm_prd_info'
+		Bulk insert bronze.crm_prd_info
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
+		with (
+			Firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK 
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+
+		-- 3
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.crm_sales_details'
+		Truncate table bronze.crm_sales_details 
+
+		Print '>> Inserting data into:  Bronze.crm_sales_details'
+		Bulk insert bronze.crm_sales_details
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
+		with (
+			Firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK 
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+
+		Print '----------------------------------------------------------------------------'
+		Print 'Loading ERP TABLES'
+		Print '----------------------------------------------------------------------------'
+
+
+		-- 4
+
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.erp_CUST_AZ12'
+		truncate table bronze.erp_CUST_AZ12
+
+		Print '>> Inserting data into:  Bronze.erp_CUST_AZ12'
+		bulk insert bronze.erp_CUST_AZ12
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
+		with (
+			firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+
+		-- 5
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.erp_LOC_A101'
+		truncate table bronze.erp_LOC_A101
+
+		Print '>> Inserting data into:  Bronze.erp_LOC_A101'
+		bulk insert bronze.erp_LOC_A101
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
+		with (
+			firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+
+		-- 6
+		SET @start_time = GETDATE()
+		PRINT '>> Truncating Table: Bronze.erp_PX_CAT_G1V2'
+		truncate table bronze.erp_PX_CAT_G1V2
+
+		Print '>> Inserting data into:  Bronze.erp_PX_CAT_G1V2'
+		bulk insert bronze.erp_PX_CAT_G1V2
+		from 'D:\SQL Projects\Data warehousing\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
+		with (
+			firstrow = 2,
+			FIELDTERMINATOR = ',',
+			TABLOCK
+		)
+		SET @End_time = GETDATE()
+		PRINT '>>  Load Duration: ' + cast(datediff(second, @start_time, @End_time ) as nvarchar) + 'Seconds'
+		Print '>> -----------------------------'
+
+		SET @full_bronze_batch_End_T = GETDATE()
+		PRINT '>> ========================================================================='
+		PRINT 'Loading Bronze Layer Is Completed'
+		PRINT '   - Total Load Duration: ' + cast(datediff(second, @full_bronze_batch_Start_T, @full_bronze_batch_End_T ) as nvarchar) + 'Seconds'
+		PRINT '>> ========================================================================='
+
+	END TRY
+
+	BEGIN CATCH
+		print '----------------------------------------------------------------------------'
+		print 'ERROR OCCURED DURING LOADING BRONZE LAYER'
+		print 'Error Message' + ERROR_MESSAGE() 
+		print 'Error Message' + CAST(ERROR_NUMBER() AS NVARCHAR)
+		print 'Error Message' + CAST(ERROR_STATE() AS NVARCHAR)
+		print '----------------------------------------------------------------------------'
+	END CATCH --TRY... CATCH (Sql runs the try block, and if it fails, it runs the CATCH block to handel thel error.
+
+END
+
+-- We converted all queries TUNCATE AND LOAD data into the dataware house tables from files into the store procedure. Now we can just run 'execute Procedue'
+-- and easily we can find the updated results, if any change or editing and updataions happends in data
+
+EXECUTE bronze.load_bronze
